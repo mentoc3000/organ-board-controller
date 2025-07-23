@@ -10,16 +10,18 @@ void setup()
 {
   // initialize LED digital pin as an output.
   pinMode(LED_BUILTIN, OUTPUT);
+  // initialize pin 2 as input with pull-down resistor
+  pinMode(2, INPUT_PULLDOWN);
 }
 
 void loop()
 {
-  // turn the LED on (HIGH is the voltage level)
-  digitalWrite(LED_BUILTIN, HIGH);
-  // wait for a second
-  delay(200);
-  // turn the LED off by making the voltage LOW
-  digitalWrite(LED_BUILTIN, LOW);
-   // wait for a second
-  delay(100);
+  // read the state of pin 2
+  int inputState = digitalRead(2);
+  if (inputState == HIGH) {
+    digitalWrite(LED_BUILTIN, HIGH);
+  } else {
+    digitalWrite(LED_BUILTIN, LOW);
+  }
+  delay(10); // small delay to debounce
 }
