@@ -37,15 +37,15 @@ void loop() {
 
   digitalWrite(CLK_PIN, LOW);   // Set clock pin low
   digitalWrite(SHLD_PIN, HIGH); // Set shift pin low
-  delay(10);                    // Small delay for stability
+  delay(1);                     // Small delay for stability
 
   button_signal();             // Call the button signal function
   digitalWrite(CLK_PIN, HIGH); // Set clock pin high
-  delay(10);                   // Small delay for stability
+  delay(1);                    // Small delay for stability
   digitalWrite(CLK_PIN, LOW);  // Set shift pin low
   button_signal();             // Call the button signal function
   digitalWrite(CLK_PIN, HIGH); // Set clock pin high
-  delay(10);                   // Small delay for stability
+  delay(1);                    // Small delay for stability
   digitalWrite(CLK_PIN, LOW);  // Set shift pin low
   button_signal();             // Call the button signal function
 
