@@ -1,22 +1,31 @@
 #include <Arduino.h>
 
 // Define constants for pin modes
-const uint8_t CLK_PIN = 2;  // Example pin for clock input
-const uint8_t SHLD_PIN = 3; // Example pin for shift input
-const uint8_t DATA_PIN = 4; // Example pin for data input
+const uint8_t DATA_PIN = 2;  // Example pin for data input
+const uint8_t CLK1_PIN = 3;  // Example pin for clock input
+const uint8_t SHLD1_PIN = 4; // Example pin for shift input
+const uint8_t CLK2_PIN = 5;  // Example pin for second clock input
+const uint8_t SHLD2_PIN = 6; // Example pin for second shift input
 
 // define button_signal funciton
 void button_signal() {
-  // This function can be used to handle button signals
-  // For example, it can read the state of a button and perform actions
   if (digitalRead(DATA_PIN) == HIGH) {
     digitalWrite(LED_BUILTIN, HIGH);
   } else {
     digitalWrite(LED_BUILTIN, LOW);
   }
-  delay(200);                     // small delay to debounce
-  digitalWrite(LED_BUILTIN, LOW); // turn off the LED after reading
-  delay(200);                     // wait for a second before next action
+}
+
+void cycle_mux(uint8_t mux) {
+  if (mux == 1) {
+    digitalWrite(CLK1_PIN, HIGH); // Set clock pin high
+    delay(1);                     // Small delay for stability
+    digitalWrite(CLK1_PIN, LOW);  // Set shift pin low
+  } else if (mux == 2) {
+    digitalWrite(CLK2_PIN, HIGH); // Set clock pin high
+    delay(1);                     // Small delay for stability
+    digitalWrite(CLK2_PIN, LOW);  // Set shift pin low
+  }
 }
 
 void setup() {
@@ -24,33 +33,20 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   // initialize pin 2 as input with pull-down resistor
   pinMode(DATA_PIN, INPUT_PULLDOWN);
-  digitalWrite(CLK_PIN, LOW);  // Set clock pin low
-  digitalWrite(SHLD_PIN, LOW); // Set shift pin low
+  digitalWrite(CLK1_PIN, LOW);  // Set clock pin low
+  digitalWrite(SHLD1_PIN, LOW); // Set shift pin low
 }
 
 void loop() {
-  // Start signal
-  digitalWrite(LED_BUILTIN, HIGH); // turn the LED off by making the voltage LOW
-  delay(1000);                     // wait for a second
-  digitalWrite(LED_BUILTIN, LOW);  // turn the LED on by making the
-  delay(1000);                     // wait for a second
+  digitalWrite(CLK1_PIN, LOW);   // Set clock pin low
+  digitalWrite(SHLD1_PIN, HIGH); // Set shift pin low
+  delay(1);                      // Small delay for stability
 
-  digitalWrite(CLK_PIN, LOW);   // Set clock pin low
-  digitalWrite(SHLD_PIN, HIGH); // Set shift pin low
-  delay(1);                     // Small delay for stability
+  // cycle_mux(1);           // Cycle through the first multiplexer
+  button_signal(); // Call the button signal function
 
-  button_signal();             // Call the button signal function
-  digitalWrite(CLK_PIN, HIGH); // Set clock pin high
-  delay(1);                    // Small delay for stability
-  digitalWrite(CLK_PIN, LOW);  // Set shift pin low
-  button_signal();             // Call the button signal function
-  digitalWrite(CLK_PIN, HIGH); // Set clock pin high
-  delay(1);                    // Small delay for stability
-  digitalWrite(CLK_PIN, LOW);  // Set shift pin low
-  button_signal();             // Call the button signal function
+  digitalWrite(CLK1_PIN, LOW);  // Set clock pin low
+  digitalWrite(SHLD1_PIN, LOW); // Set shift pin low
 
-  digitalWrite(CLK_PIN, LOW);  // Set clock pin low
-  digitalWrite(SHLD_PIN, LOW); // Set shift pin low
-
-  delay(1000); // small delay to debounce
+  delay(100); // small delay to debounce
 }
