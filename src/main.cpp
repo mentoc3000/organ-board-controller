@@ -40,5 +40,5 @@ void loop() {
 
   digitalWrite(CLK_PIN, LOW);  // Set clock pin low
   digitalWrite(SHLD_PIN, LOW); // Set shift pin low
-  delay(10);                   // small delay to debounce
+  delay(1);                    // small delay to debounce
 }
