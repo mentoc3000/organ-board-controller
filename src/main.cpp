@@ -1,35 +1,33 @@
 #include <Arduino.h>
 
 // Define constants for pin modes
-const uint8_t DATA_PIN = 2; // Example pin for data input
-const uint8_t CLK_PIN = 4;  // Example pin for clock input
-const uint8_t SHLD_PIN = 3; // Example pin for shift input
+const uint8_t DATA_PIN = 2;
+const uint8_t CLK_PIN = 4;
+const uint8_t SHLD_PIN = 3;
 
 void cycle_mux() {
-  digitalWrite(CLK_PIN, HIGH); // Set clock pin high
-  delay(1);                    // Small delay for stability
-  digitalWrite(CLK_PIN, LOW);  // Set shift pin low
-  delay(1);                    // Small delay for stability
+  digitalWrite(CLK_PIN, HIGH);
+  delay(1);
+  digitalWrite(CLK_PIN, LOW);
+  delay(1);
 }
 
 void setup() {
-  // initialize LED digital pin as an output.
   pinMode(LED_BUILTIN, OUTPUT);
-  // initialize pin 2 as input with pull-down resistor
   pinMode(DATA_PIN, INPUT_PULLDOWN);
-  digitalWrite(CLK_PIN, LOW);  // Set clock pin low
-  digitalWrite(SHLD_PIN, LOW); // Set shift pin low
-  delay(1);                    // Small delay for stability
+  digitalWrite(CLK_PIN, LOW);
+  digitalWrite(SHLD_PIN, LOW);
+  delay(1);
 }
 
 void loop() {
-  digitalWrite(CLK_PIN, LOW);   // Set clock pin low
-  digitalWrite(SHLD_PIN, HIGH); // Set shift pin low
-  delay(1);                     // Small delay for stability
+  digitalWrite(CLK_PIN, LOW);
+  digitalWrite(SHLD_PIN, HIGH);
+  delay(1);
 
   int n = 15; // Number of cycles to perform
   for (int i = 0; i < n; i++) {
-    cycle_mux(); // Cycle through the first multiplexer
+    cycle_mux();
   }
 
   if (digitalRead(DATA_PIN) == HIGH) {
@@ -38,7 +36,7 @@ void loop() {
     digitalWrite(LED_BUILTIN, LOW);
   }
 
-  digitalWrite(CLK_PIN, LOW);  // Set clock pin low
-  digitalWrite(SHLD_PIN, LOW); // Set shift pin low
-  delay(1);                    // small delay to debounce
+  digitalWrite(CLK_PIN, LOW);
+  digitalWrite(SHLD_PIN, LOW);
+  delay(1);
 }
