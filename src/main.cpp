@@ -54,7 +54,26 @@ void loop() {
   }
   lastButtonState = buttonState;
 
-  int rawAnalog = analogRead(ANALOG_PIN);
+  // Median filter for analog input
+  const int medianWindow = 5;
+  static int analogSamples[medianWindow] = {0};
+  static int sampleIndex = 0;
+  analogSamples[sampleIndex] = analogRead(ANALOG_PIN);
+  sampleIndex = (sampleIndex + 1) % medianWindow;
+
+  // Copy and sort for median
+  int sorted[medianWindow];
+  memcpy(sorted, analogSamples, sizeof(sorted));
+  for (int i = 0; i < medianWindow - 1; i++) {
+    for (int j = i + 1; j < medianWindow; j++) {
+      if (sorted[j] < sorted[i]) {
+        int temp = sorted[i];
+        sorted[i] = sorted[j];
+        sorted[j] = temp;
+      }
+    }
+  }
+  int rawAnalog = sorted[medianWindow / 2];
   int rawMin = 470;
   int rawMax = 1020; // Assuming 10-bit ADC
   int analogValue = 0;
@@ -66,7 +85,8 @@ void loop() {
     analogValue = (rawAnalog - rawMin) * 127 / (rawMax - rawMin);
   }
   // Always send if at min or max, otherwise require minimum delta
-  if (lastAnalogValue == -1 || analogValue == 0 || analogValue == 127 ||
+  if (lastAnalogValue == -1 || (lastAnalogValue != 0 && analogValue == 0) ||
+      (lastAnalogValue != 127 && analogValue == 127) ||
       abs(analogValue - lastAnalogValue) > analogDeltaDetect) {
     usbMIDI.sendControlChange(2, analogValue, 1); // CC#2, value, channel 1
     lastAnalogValue = analogValue;
