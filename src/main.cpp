@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "display.h"
 
 // Define constants for pin modes
 const uint8_t DATA_PIN = 2;
@@ -19,6 +20,7 @@ void setup() {
   pinMode(ANALOG_PIN, INPUT);
   digitalWrite(CLK_PIN, LOW);
   digitalWrite(SHLD_PIN, LOW);
+  setupDisplay();
   delay(1);
 }
 
@@ -91,6 +93,9 @@ void loop() {
     usbMIDI.sendControlChange(2, analogValue, 1); // CC#2, value, channel 1
     lastAnalogValue = analogValue;
   }
+
+  // Update OLED display with raw and MIDI values
+  updateDisplay(rawAnalog, analogValue);
 
   digitalWrite(CLK_PIN, LOW);
   digitalWrite(SHLD_PIN, LOW);
