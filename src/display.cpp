@@ -13,10 +13,14 @@ void setupDisplay() {
       ;
   }
   display.clearDisplay();
-  display.setTextSize(1);
+  display.setTextSize(2);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0, 0);
-  display.println("Organ Board");
+  display.println("OrganBoard");
+  display.display();
+  display.setTextSize(1);
+  display.setCursor(0, 24);
+  display.println("by JP Sheehan");
   display.display();
 }
 

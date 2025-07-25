@@ -27,6 +27,7 @@ void setup() {
 // State variable for button edge detection
 bool lastButtonState = LOW;
 int lastAnalogValue = -1;
+bool analogMoved = false;
 const int analogDeltaDetect =
     1; // Only send MIDI if value changes by more than this
 
@@ -90,12 +91,21 @@ void loop() {
     analogValue = (rawAnalog - rawMin) * 127 / (rawMax - rawMin);
   }
   // Always send if at min or max, otherwise require minimum delta
-  if (lastAnalogValue == -1 || (lastAnalogValue != 0 && analogValue == 0) ||
-      (lastAnalogValue != 127 && analogValue == 127) ||
-      abs(analogValue - lastAnalogValue) > analogDeltaDetect) {
+  // Only start sending analog MIDI after the dial is moved from its initial
+  // value
+  if (!analogMoved) {
+    if (lastAnalogValue == -1) {
+      lastAnalogValue = analogValue;
+    } else if (analogValue != lastAnalogValue) {
+      analogMoved = true;
+    }
+  }
+  if (analogMoved &&
+      (lastAnalogValue == -1 || (lastAnalogValue != 0 && analogValue == 0) ||
+       (lastAnalogValue != 127 && analogValue == 127) ||
+       abs(analogValue - lastAnalogValue) > analogDeltaDetect)) {
     usbMIDI.sendControlChange(cc, analogValue, 1); // CC#2, value, channel 1
     lastAnalogValue = analogValue;
-
     // Update OLED display with raw and MIDI values
     updateDisplay(cc, analogValue);
   }
