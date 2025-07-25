@@ -20,6 +20,9 @@ void setup() {
   delay(1);
 }
 
+// State variable for button edge detection
+bool lastButtonState = LOW;
+
 void loop() {
   digitalWrite(CLK_PIN, LOW);
   digitalWrite(SHLD_PIN, HIGH);
@@ -30,13 +33,28 @@ void loop() {
     cycle_mux();
   }
 
-  if (digitalRead(DATA_PIN) == HIGH) {
+  bool buttonState = digitalRead(DATA_PIN);
+  if (buttonState == HIGH) {
     digitalWrite(LED_BUILTIN, HIGH);
+    if (lastButtonState == LOW) {
+      // Button was just pressed, send MIDI CC
+      usbMIDI.sendControlChange(1, 127, 1); // CC#1, value 127, channel 1
+    }
   } else {
     digitalWrite(LED_BUILTIN, LOW);
+    if (lastButtonState == HIGH) {
+      // Button was just released, send MIDI CC off (optional)
+      usbMIDI.sendControlChange(1, 0, 1); // CC#1, value 0, channel 1
+    }
   }
+  lastButtonState = buttonState;
 
   digitalWrite(CLK_PIN, LOW);
   digitalWrite(SHLD_PIN, LOW);
   delay(1);
+
+  // Always call this to keep USB MIDI running smoothly
+  while (usbMIDI.read()) {
+    // Empty loop to process incoming MIDI messages if needed
+  }
 }
