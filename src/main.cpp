@@ -42,16 +42,18 @@ void loop() {
 
   bool buttonState = digitalRead(DATA_PIN);
   if (buttonState == HIGH) {
-    digitalWrite(LED_BUILTIN, HIGH);
+    // digitalWrite(LED_BUILTIN, HIGH);
     if (lastButtonState == LOW) {
       // Button was just pressed, send MIDI CC
       usbMIDI.sendControlChange(1, 127, 1); // CC#1, value 127, channel 1
+      updateDisplay(1, 127);
     }
   } else {
-    digitalWrite(LED_BUILTIN, LOW);
+    // digitalWrite(LED_BUILTIN, LOW);
     if (lastButtonState == HIGH) {
       // Button was just released, send MIDI CC off (optional)
       usbMIDI.sendControlChange(1, 0, 1); // CC#1, value 0, channel 1
+      updateDisplay(1, 0);
     }
   }
   lastButtonState = buttonState;
@@ -93,10 +95,10 @@ void loop() {
       abs(analogValue - lastAnalogValue) > analogDeltaDetect) {
     usbMIDI.sendControlChange(cc, analogValue, 1); // CC#2, value, channel 1
     lastAnalogValue = analogValue;
-  }
 
-  // Update OLED display with raw and MIDI values
-  updateDisplay(cc, analogValue);
+    // Update OLED display with raw and MIDI values
+    updateDisplay(cc, analogValue);
+  }
 
   digitalWrite(CLK_PIN, LOW);
   digitalWrite(SHLD_PIN, LOW);
