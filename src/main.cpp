@@ -25,6 +25,8 @@ void setup() {
 // State variable for button edge detection
 bool lastButtonState = LOW;
 int lastAnalogValue = -1;
+const int analogDeltaDetect =
+    1; // Only send MIDI if value changes by more than this
 
 void loop() {
   digitalWrite(CLK_PIN, LOW);
@@ -63,7 +65,9 @@ void loop() {
   } else {
     analogValue = (rawAnalog - rawMin) * 127 / (rawMax - rawMin);
   }
-  if (analogValue != lastAnalogValue) {
+  // Always send if at min or max, otherwise require minimum delta
+  if (lastAnalogValue == -1 || analogValue == 0 || analogValue == 127 ||
+      abs(analogValue - lastAnalogValue) > analogDeltaDetect) {
     usbMIDI.sendControlChange(2, analogValue, 1); // CC#2, value, channel 1
     lastAnalogValue = analogValue;
   }
