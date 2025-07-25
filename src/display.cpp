@@ -20,12 +20,12 @@ void setupDisplay() {
   display.display();
 }
 
-void updateDisplay(int analogValue, int midiValue) {
+void updateDisplay(int cc, int midiValue) {
   display.clearDisplay();
   display.setCursor(0, 0);
-  display.print("Analog: ");
-  display.println(analogValue);
-  display.print("MIDI:   ");
+  display.print("CC:   ");
+  display.println(cc);
+  display.print("MIDI: ");
   display.println(midiValue);
   display.display();
 }

@@ -79,6 +79,7 @@ void loop() {
   int rawMin = 470;
   int rawMax = 1020; // Assuming 10-bit ADC
   int analogValue = 0;
+  int cc = 2; // MIDI CC number for analog input
   if (rawAnalog <= rawMin) {
     analogValue = 0;
   } else if (rawAnalog >= rawMax) {
@@ -90,12 +91,12 @@ void loop() {
   if (lastAnalogValue == -1 || (lastAnalogValue != 0 && analogValue == 0) ||
       (lastAnalogValue != 127 && analogValue == 127) ||
       abs(analogValue - lastAnalogValue) > analogDeltaDetect) {
-    usbMIDI.sendControlChange(2, analogValue, 1); // CC#2, value, channel 1
+    usbMIDI.sendControlChange(cc, analogValue, 1); // CC#2, value, channel 1
     lastAnalogValue = analogValue;
   }
 
   // Update OLED display with raw and MIDI values
-  updateDisplay(rawAnalog, analogValue);
+  updateDisplay(cc, analogValue);
 
   digitalWrite(CLK_PIN, LOW);
   digitalWrite(SHLD_PIN, LOW);
