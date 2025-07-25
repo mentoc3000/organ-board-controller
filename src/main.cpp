@@ -4,6 +4,7 @@
 const uint8_t DATA_PIN = 2;
 const uint8_t CLK_PIN = 4;
 const uint8_t SHLD_PIN = 3;
+const uint8_t ANALOG_PIN = A0; // Analog input pin 14
 
 void cycle_mux() {
   digitalWrite(CLK_PIN, HIGH);
@@ -15,6 +16,7 @@ void cycle_mux() {
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(DATA_PIN, INPUT_PULLDOWN);
+  pinMode(ANALOG_PIN, INPUT);
   digitalWrite(CLK_PIN, LOW);
   digitalWrite(SHLD_PIN, LOW);
   delay(1);
@@ -22,6 +24,7 @@ void setup() {
 
 // State variable for button edge detection
 bool lastButtonState = LOW;
+int lastAnalogValue = -1;
 
 void loop() {
   digitalWrite(CLK_PIN, LOW);
@@ -48,6 +51,22 @@ void loop() {
     }
   }
   lastButtonState = buttonState;
+
+  int rawAnalog = analogRead(ANALOG_PIN);
+  int rawMin = 470;
+  int rawMax = 1020; // Assuming 10-bit ADC
+  int analogValue = 0;
+  if (rawAnalog <= rawMin) {
+    analogValue = 0;
+  } else if (rawAnalog >= rawMax) {
+    analogValue = 127;
+  } else {
+    analogValue = (rawAnalog - rawMin) * 127 / (rawMax - rawMin);
+  }
+  if (analogValue != lastAnalogValue) {
+    usbMIDI.sendControlChange(2, analogValue, 1); // CC#2, value, channel 1
+    lastAnalogValue = analogValue;
+  }
 
   digitalWrite(CLK_PIN, LOW);
   digitalWrite(SHLD_PIN, LOW);
