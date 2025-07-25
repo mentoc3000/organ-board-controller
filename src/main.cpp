@@ -1,5 +1,5 @@
-#include <Arduino.h>
 #include "display.h"
+#include <Arduino.h>
 
 // Define constants for pin modes
 const uint8_t DATA_PIN = 2;

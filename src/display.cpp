@@ -1,15 +1,16 @@
-#include <Arduino.h>
-#include <Wire.h>
+#include "display.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include "display.h"
+#include <Arduino.h>
+#include <Wire.h>
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 void setupDisplay() {
   if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR)) {
     // Display allocation failed
-    for (;;);
+    for (;;)
+      ;
   }
   display.clearDisplay();
   display.setTextSize(1);
