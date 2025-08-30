@@ -6,7 +6,7 @@
 
 constexpr uint8_t ANALOG_CHANNEL = 1;
 constexpr size_t NUM_KNOBS = 14;
-constexpr int RAW_MIN_DEFAULT = 470;
+constexpr int RAW_MIN_DEFAULT = 4;
 constexpr int RAW_MAX_DEFAULT = 1020;
 constexpr int ANALOG_DELTA_DETECT = 1;
 
