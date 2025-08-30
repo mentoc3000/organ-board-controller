@@ -61,19 +61,24 @@ void setupDigitalIO() {
 }
 
 void loopDigitalIO() {
-  digitalWrite(CLK_PIN, LOW);
-  digitalWrite(SHLD_PIN, HIGH);
-  delay(1);
+  static unsigned long lastCycleTime = 0;
+  constexpr unsigned long cycleInterval = 1; // ms
+  unsigned long now = millis();
 
-  for (size_t i = 0; i < NUM_TOGGLES; i++) {
-    cycle_mux();
-    if (!toggles[i])
-      continue; // Safety check for failed allocation
-    bool buttonState = digitalRead(DATA_PIN);
-    toggles[i]->update(buttonState);
+  if (now - lastCycleTime >= cycleInterval) {
+    digitalWrite(CLK_PIN, LOW);
+    digitalWrite(SHLD_PIN, HIGH);
+
+    for (size_t i = 0; i < NUM_TOGGLES; i++) {
+      cycle_mux();
+      if (!toggles[i])
+        continue; // Safety check for failed allocation
+      bool buttonState = digitalRead(DATA_PIN);
+      toggles[i]->update(buttonState);
+    }
+
+    digitalWrite(CLK_PIN, LOW);
+    digitalWrite(SHLD_PIN, LOW);
+    lastCycleTime = now;
   }
-
-  digitalWrite(CLK_PIN, LOW);
-  digitalWrite(SHLD_PIN, LOW);
-  delay(1);
 }
