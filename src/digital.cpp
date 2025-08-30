@@ -1,12 +1,13 @@
 #include "display.h"
 #include <Arduino.h>
+#include <array>
 
 // Define constants for pin modes
-const uint8_t DATA_PIN = 2;
-const uint8_t CLK_PIN = 4;
-const uint8_t SHLD_PIN = 3;
-const uint8_t DIGITAL_CHANNEL = 1;
-const uint8_t NUM_BUTTONS = 1; // Update this if more buttons are added
+constexpr uint8_t DATA_PIN = 2;
+constexpr uint8_t CLK_PIN = 4;
+constexpr uint8_t SHLD_PIN = 3;
+constexpr uint8_t DIGITAL_CHANNEL = 1;
+constexpr size_t NUM_TOGGLES = 22;
 
 void cycle_mux() {
   digitalWrite(CLK_PIN, HIGH);
@@ -15,38 +16,47 @@ void cycle_mux() {
   delay(1);
 }
 
-// Button class
-class Button {
+class Toggle {
 public:
-  Button(uint8_t cc) : cc(cc), lastState(LOW) {}
+  Toggle(uint8_t cc) : cc(cc), lastState(LOW) {}
 
-  void update(bool currentState) {
+  bool update(bool currentState) {
+    bool changed = (currentState != lastState);
     if (currentState == HIGH && lastState == LOW) {
-      // Button was just toggled on
+      // Toggle was just toggled on
       usbMIDI.sendControlChange(cc, 127, DIGITAL_CHANNEL);
       updateDisplay(cc, 127);
     } else if (currentState == LOW && lastState == HIGH) {
-      // Button was just toggled off
+      // Toggle was just toggled off
       usbMIDI.sendControlChange(cc, 0, DIGITAL_CHANNEL);
       updateDisplay(cc, 0);
     }
     lastState = currentState;
+    return changed;
   }
+
+  uint8_t getCC() const { return cc; }
+  bool getLastState() const { return lastState; }
 
 private:
   uint8_t cc;
   bool lastState;
 };
 
-Button buttons[NUM_BUTTONS];
+std::array<Toggle *, NUM_TOGGLES> toggles = {nullptr};
 
 void setupDigitalIO() {
   pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(DATA_PIN, INPUT_PULLDOWN);
+  pinMode(DATA_PIN, INPUT_PULLUP);
   digitalWrite(CLK_PIN, LOW);
   digitalWrite(SHLD_PIN, LOW);
-  for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
-    buttons[i] = Button(1 + i); // Assign CC numbers starting from 1
+  for (size_t i = 0; i < NUM_TOGGLES; i++) {
+    toggles[i] =
+        new (std::nothrow) Toggle(1 + i); // Assign CC numbers starting from 1
+    if (!toggles[i]) {
+      // Handle allocation failure (Suggestion 4)
+      // You could print an error or halt here if desired
+    }
   }
 }
 
@@ -55,10 +65,12 @@ void loopDigitalIO() {
   digitalWrite(SHLD_PIN, HIGH);
   delay(1);
 
-  for (int i = 0; i < NUM_BUTTONS; i++) {
+  for (size_t i = 0; i < NUM_TOGGLES; i++) {
     cycle_mux();
+    if (!toggles[i])
+      continue; // Safety check for failed allocation
     bool buttonState = digitalRead(DATA_PIN);
-    buttons[i].update(buttonState);
+    toggles[i]->update(buttonState);
   }
 
   digitalWrite(CLK_PIN, LOW);
