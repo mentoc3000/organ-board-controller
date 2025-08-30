@@ -8,6 +8,7 @@ constexpr uint8_t CLK_PIN = 4;
 constexpr uint8_t SHLD_PIN = 3;
 constexpr uint8_t DIGITAL_CHANNEL = 1;
 constexpr size_t NUM_TOGGLES = 22;
+constexpr uint8_t LED_PIN = 5;
 
 void cycle_mux() {
   digitalWrite(CLK_PIN, HIGH);
@@ -60,7 +61,7 @@ void setupDigitalIO() {
   }
 }
 
-void loopDigitalIO() {
+int loopDigitalIns() {
   static unsigned long lastCycleTime = 0;
   constexpr unsigned long cycleInterval = 1; // ms
   unsigned long now = millis();
@@ -81,4 +82,24 @@ void loopDigitalIO() {
     digitalWrite(SHLD_PIN, LOW);
     lastCycleTime = now;
   }
+
+  return 0;
+}
+
+void loopLED() {
+  static unsigned long lastCycleTime = 0;
+  constexpr unsigned long cycleInterval = 1000;
+  unsigned long now = millis();
+  static bool ledState = false;
+
+  if (now - lastCycleTime >= cycleInterval) {
+    ledState = !ledState;
+    digitalWrite(LED_PIN, ledState ? HIGH : LOW);
+    lastCycleTime = now;
+  }
+}
+
+void loopDigitalIO() {
+  loopDigitalIns();
+  loopLED();
 }
