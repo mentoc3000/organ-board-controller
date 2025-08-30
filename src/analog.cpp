@@ -95,8 +95,7 @@ void setupAnalogIO() {
     knobs[i] = new (std::nothrow) Knob(pin, std::get<1>(PIN_CC_PAIRS[i]),
                                        RAW_MIN_DEFAULT, RAW_MAX_DEFAULT);
     if (!knobs[i]) {
-      // Handle allocation failure (Suggestion 6)
-      // You could print an error or halt here if desired
+      // Handle allocation failure
     }
   }
 }

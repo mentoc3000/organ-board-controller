@@ -55,8 +55,7 @@ void setupDigitalIO() {
     toggles[i] =
         new (std::nothrow) Toggle(1 + i); // Assign CC numbers starting from 1
     if (!toggles[i]) {
-      // Handle allocation failure (Suggestion 4)
-      // You could print an error or halt here if desired
+      // Handle allocation failure
     }
   }
 }
