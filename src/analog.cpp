@@ -10,14 +10,28 @@ constexpr int RAW_MIN_DEFAULT = 4;
 constexpr int RAW_MAX_DEFAULT = 1020;
 constexpr int ANALOG_DELTA_DETECT = 1;
 
-const std::array<std::tuple<uint8_t, uint8_t>, NUM_KNOBS> PIN_CC_PAIRS = {
-    std::make_tuple(A0, 1),   std::make_tuple(A1, 2),
-    std::make_tuple(A6, 3),   std::make_tuple(A7, 4),
-    std::make_tuple(A8, 5),   std::make_tuple(A9, 6),
-    std::make_tuple(A10, 7),  std::make_tuple(A11, 8),
-    std::make_tuple(A12, 9),  std::make_tuple(A13, 10),
-    std::make_tuple(A14, 11), std::make_tuple(A15, 12),
-    std::make_tuple(A16, 13), std::make_tuple(A17, 14)};
+struct KnobConfig {
+  uint8_t pin;
+  uint8_t cc;
+  int rawMin;
+  int rawMax;
+};
+
+const std::array<KnobConfig, NUM_KNOBS> KNOB_CONFIGS = {
+    KnobConfig{A0, 1, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
+    KnobConfig{A1, 2, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
+    KnobConfig{A6, 3, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
+    KnobConfig{A7, 4, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
+    KnobConfig{A8, 5, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
+    KnobConfig{A9, 6, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
+    KnobConfig{A10, 7, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
+    KnobConfig{A11, 8, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
+    KnobConfig{A12, 9, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
+    KnobConfig{A13, 10, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
+    KnobConfig{A14, 11, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
+    KnobConfig{A15, 12, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
+    KnobConfig{A16, 13, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
+    KnobConfig{A17, 14, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT}};
 
 class Knob {
 public:
@@ -90,10 +104,9 @@ std::array<Knob *, NUM_KNOBS> knobs = {nullptr};
 
 void setupAnalogIO() {
   for (size_t i = 0; i < NUM_KNOBS; i++) {
-    uint8_t pin = std::get<0>(PIN_CC_PAIRS[i]);
-    pinMode(pin, INPUT);
-    knobs[i] = new (std::nothrow) Knob(pin, std::get<1>(PIN_CC_PAIRS[i]),
-                                       RAW_MIN_DEFAULT, RAW_MAX_DEFAULT);
+    const KnobConfig &cfg = KNOB_CONFIGS[i];
+    pinMode(cfg.pin, INPUT);
+    knobs[i] = new (std::nothrow) Knob(cfg.pin, cfg.cc, cfg.rawMin, cfg.rawMax);
     if (!knobs[i]) {
       // Handle allocation failure
     }
