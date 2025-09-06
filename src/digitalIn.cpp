@@ -8,7 +8,6 @@ constexpr uint8_t CLK_PIN = 31;
 constexpr uint8_t SHLD_PIN = 32;
 constexpr uint8_t DIGITAL_CHANNEL = 1;
 constexpr size_t NUM_TOGGLES = 22;
-constexpr uint8_t LED_PIN = 5;
 
 void cycle_mux() {
   static unsigned long lastCycleTime = 0;
@@ -54,9 +53,7 @@ private:
 
 std::array<Toggle *, NUM_TOGGLES> toggles = {nullptr};
 
-void setupDigitalIO() {
-  pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(LED_PIN, OUTPUT);
+void setupDigitalIns() {
   pinMode(DATA_PIN, INPUT_PULLUP);
   digitalWrite(CLK_PIN, LOW);
   digitalWrite(SHLD_PIN, LOW);
@@ -95,22 +92,4 @@ int loopDigitalIns() {
   }
 
   return 0;
-}
-
-void loopLED() {
-  static unsigned long lastCycleTime = 0;
-  constexpr unsigned long cycleInterval = 1000;
-  unsigned long now = millis();
-  static bool ledState = false;
-
-  if (now - lastCycleTime >= cycleInterval) {
-    ledState = !ledState;
-    digitalWrite(LED_PIN, ledState ? HIGH : LOW);
-    lastCycleTime = now;
-  }
-}
-
-void loopDigitalIO() {
-  loopDigitalIns();
-  loopLED();
 }
