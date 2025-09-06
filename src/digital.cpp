@@ -3,12 +3,12 @@
 #include <array>
 
 // Define constants for pin modes
-constexpr uint8_t DATA_PIN = 2;
-constexpr uint8_t CLK_PIN = 4;
-constexpr uint8_t SHLD_PIN = 3;
+constexpr uint8_t DATA_PIN = 30;
+constexpr uint8_t CLK_PIN = 31;
+constexpr uint8_t SHLD_PIN = 32;
 constexpr uint8_t DIGITAL_CHANNEL = 1;
 constexpr size_t NUM_TOGGLES = 22;
-constexpr uint8_t LED_PIN = 5;
+constexpr uint8_t LED_PIN = 7;
 
 void cycle_mux() {
   digitalWrite(CLK_PIN, HIGH);
@@ -24,12 +24,12 @@ public:
   bool update(bool currentState) {
     bool changed = (currentState != lastState);
     if (currentState == HIGH && lastState == LOW) {
-      // Toggle was just toggled on
-      usbMIDI.sendControlChange(cc, 127, DIGITAL_CHANNEL);
-      updateDisplay(cc, 127);
-    } else if (currentState == LOW && lastState == HIGH) {
       // Toggle was just toggled off
       usbMIDI.sendControlChange(cc, 0, DIGITAL_CHANNEL);
+      updateDisplay(cc, 127);
+    } else if (currentState == LOW && lastState == HIGH) {
+      // Toggle was just toggled on
+      usbMIDI.sendControlChange(cc, 127, DIGITAL_CHANNEL);
       updateDisplay(cc, 0);
     }
     lastState = currentState;
@@ -68,6 +68,7 @@ int loopDigitalIns() {
   if (now - lastCycleTime >= cycleInterval) {
     digitalWrite(CLK_PIN, LOW);
     digitalWrite(SHLD_PIN, HIGH);
+    delay(1);
 
     for (size_t i = 0; i < NUM_TOGGLES; i++) {
       cycle_mux();
@@ -100,5 +101,5 @@ void loopLED() {
 
 void loopDigitalIO() {
   loopDigitalIns();
-  loopLED();
+  // loopLED();
 }
