@@ -11,10 +11,18 @@ constexpr size_t NUM_TOGGLES = 22;
 constexpr uint8_t LED_PIN = 5;
 
 void cycle_mux() {
-  digitalWrite(CLK_PIN, HIGH);
-  delay(1);
-  digitalWrite(CLK_PIN, LOW);
-  delay(1);
+  static unsigned long lastCycleTime = 0;
+  static bool clkHigh = false;
+  unsigned long now = millis();
+  if (!clkHigh && now - lastCycleTime >= 1) {
+    digitalWrite(CLK_PIN, HIGH);
+    clkHigh = true;
+    lastCycleTime = now;
+  } else if (clkHigh && now - lastCycleTime >= 1) {
+    digitalWrite(CLK_PIN, LOW);
+    clkHigh = false;
+    lastCycleTime = now;
+  }
 }
 
 class Toggle {
@@ -62,15 +70,17 @@ void setupDigitalIO() {
 }
 
 int loopDigitalIns() {
-  static unsigned long lastCycleTime = 0;
   constexpr unsigned long cycleInterval = 1; // ms
   unsigned long now = millis();
 
-  if (now - lastCycleTime >= cycleInterval) {
+  static unsigned long lastSHLDTime = 0;
+  static bool shldHigh = false;
+  if (!shldHigh && now - lastSHLDTime >= cycleInterval) {
     digitalWrite(CLK_PIN, LOW);
     digitalWrite(SHLD_PIN, HIGH);
-    delay(1);
-
+    shldHigh = true;
+    lastSHLDTime = now;
+  } else if (shldHigh && now - lastSHLDTime >= cycleInterval) {
     for (size_t i = 0; i < NUM_TOGGLES; i++) {
       cycle_mux();
       if (!toggles[i])
@@ -78,10 +88,10 @@ int loopDigitalIns() {
       bool buttonState = digitalRead(DATA_PIN);
       toggles[i]->update(buttonState);
     }
-
     digitalWrite(CLK_PIN, LOW);
     digitalWrite(SHLD_PIN, LOW);
-    lastCycleTime = now;
+    shldHigh = false;
+    lastSHLDTime = now;
   }
 
   return 0;
@@ -96,7 +106,6 @@ void loopLED() {
   if (now - lastCycleTime >= cycleInterval) {
     ledState = !ledState;
     digitalWrite(LED_PIN, ledState ? HIGH : LOW);
-    digitalWrite(LED_BUILTIN, ledState ? HIGH : LOW);
     lastCycleTime = now;
   }
 }
