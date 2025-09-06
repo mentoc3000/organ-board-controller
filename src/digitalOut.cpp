@@ -1,20 +1,31 @@
 #include <Arduino.h>
 
 constexpr uint8_t LED_PIN = 5;
+// MIDI Clock: 24 clocks per quarter note (beat)
+static uint8_t midiClockCount = 0;
+static bool ledState = false;
+static unsigned long lastBeatTime = 0;
+constexpr unsigned long ledOnDuration = 100; // ms LED stays on per beat
 
-void setupDigitalOuts() { pinMode(LED_PIN, OUTPUT); }
+void setupDigitalOuts() {
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
+}
 
-void loopLED() {
-  static unsigned long lastCycleTime = 0;
-  constexpr unsigned long cycleInterval = 1000;
-  unsigned long now = millis();
-  static bool ledState = false;
-
-  if (now - lastCycleTime >= cycleInterval) {
-    ledState = !ledState;
-    digitalWrite(LED_PIN, ledState ? HIGH : LOW);
-    lastCycleTime = now;
+// Call this from main loop when a MIDI Clock message is received
+void onMidiClock() {
+  midiClockCount++;
+  if (midiClockCount >= 24) { // One beat
+    midiClockCount = 0;
+    ledState = true;
+    digitalWrite(LED_PIN, HIGH);
+    lastBeatTime = millis();
   }
 }
 
-void loopDigitalOuts() { loopLED(); }
+void loopDigitalOuts() {
+  if (ledState && (millis() - lastBeatTime > ledOnDuration)) {
+    ledState = false;
+    digitalWrite(LED_PIN, LOW);
+  }
+}

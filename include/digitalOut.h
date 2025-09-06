@@ -2,3 +2,4 @@
 
 void setupDigitalOuts();
 void loopDigitalOuts();
+void onMidiClock();

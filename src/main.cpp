@@ -15,8 +15,12 @@ void loop() {
   loopDigitalIns();
   loopDigitalOuts();
   loopAnalogIO();
+
   // Always call this to keep USB MIDI running smoothly
   while (usbMIDI.read()) {
-    // Empty loop to process incoming MIDI messages if needed
+    if (usbMIDI.getType() == usbMIDI.Clock) {
+      onMidiClock();
+    }
+    // ...existing code...
   }
 }
