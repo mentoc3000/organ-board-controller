@@ -8,6 +8,10 @@ constexpr uint8_t CLK_PIN = 31;
 constexpr uint8_t SHLD_PIN = 32;
 constexpr uint8_t DIGITAL_CHANNEL = 1;
 constexpr size_t NUM_TOGGLES = 22;
+constexpr uint8_t DIGITAL_CC[NUM_TOGGLES] = {
+    1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11,
+    12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
+};
 
 void cycle_mux() {
   static unsigned long lastCycleTime = 0;
@@ -58,8 +62,7 @@ void setupDigitalIns() {
   digitalWrite(CLK_PIN, LOW);
   digitalWrite(SHLD_PIN, LOW);
   for (size_t i = 0; i < NUM_TOGGLES; i++) {
-    toggles[i] =
-        new (std::nothrow) Toggle(1 + i); // Assign CC numbers starting from 1
+    toggles[i] = new (std::nothrow) Toggle(DIGITAL_CC[i]);
     if (!toggles[i]) {
       // Handle allocation failure
     }
