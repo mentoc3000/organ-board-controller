@@ -37,11 +37,11 @@ public:
     if (currentState == HIGH && lastState == LOW) {
       // Toggle was just toggled off
       usbMIDI.sendControlChange(cc, 0, DIGITAL_CHANNEL);
-      updateDisplay(cc, 127);
+      updateDisplay(cc, DIGITAL_CHANNEL, 127);
     } else if (currentState == LOW && lastState == HIGH) {
       // Toggle was just toggled on
       usbMIDI.sendControlChange(cc, 127, DIGITAL_CHANNEL);
-      updateDisplay(cc, 0);
+      updateDisplay(cc, DIGITAL_CHANNEL, 0);
     }
     lastState = currentState;
     return changed;

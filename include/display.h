@@ -11,4 +11,4 @@
 extern Adafruit_SSD1306 display;
 
 void setupDisplay();
-void updateDisplay(int analogValue, int midiValue);
+void updateDisplay(int analogValue, int channel, int midiValue);

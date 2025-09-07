@@ -24,12 +24,14 @@ void setupDisplay() {
   display.display();
 }
 
-void updateDisplay(int cc, int midiValue) {
+void updateDisplay(int cc, int channel, int midiValue) {
   display.clearDisplay();
   display.setCursor(0, 0);
-  display.print("CC:   ");
+  display.print("CC:      ");
   display.println(cc);
-  display.print("MIDI: ");
+  display.print("Channel: ");
+  display.println(channel);
+  display.print("MIDI:    ");
   display.println(midiValue);
   display.display();
 }
