@@ -83,13 +83,13 @@ int loopDigitalIns() {
     } else {
       state = ADVANCE;
     }
+    readIndex++;
   }
   if (state == ADVANCE) {
     if (now - lastTic >= cycleInterval) {
       digitalWrite(CLK_PIN, clkHigh ? HIGH : LOW);
       lastTic = now;
       clkHigh = !clkHigh;
-      readIndex++;
       state = clkHigh ? ADVANCE : READ;
     }
   }
