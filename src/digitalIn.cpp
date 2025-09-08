@@ -6,27 +6,12 @@
 constexpr uint8_t DATA_PIN = 30;
 constexpr uint8_t CLK_PIN = 31;
 constexpr uint8_t SHLD_PIN = 32;
-constexpr uint8_t DIGITAL_CHANNEL = 1;
+constexpr uint8_t DIGITAL_CHANNEL = 2;
 constexpr size_t NUM_TOGGLES = 22;
 constexpr uint8_t DIGITAL_CC[NUM_TOGGLES] = {
     1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11,
     12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
 };
-
-void cycle_mux() {
-  static unsigned long lastCycleTime = 0;
-  static bool clkHigh = false;
-  unsigned long now = millis();
-  if (!clkHigh && now - lastCycleTime >= 1) {
-    digitalWrite(CLK_PIN, HIGH);
-    clkHigh = true;
-    lastCycleTime = now;
-  } else if (clkHigh && now - lastCycleTime >= 1) {
-    digitalWrite(CLK_PIN, LOW);
-    clkHigh = false;
-    lastCycleTime = now;
-  }
-}
 
 class Toggle {
 public:
@@ -37,11 +22,11 @@ public:
     if (currentState == HIGH && lastState == LOW) {
       // Toggle was just toggled off
       usbMIDI.sendControlChange(cc, 0, DIGITAL_CHANNEL);
-      updateDisplay(cc, DIGITAL_CHANNEL, 127);
+      updateDisplay(cc, DIGITAL_CHANNEL, 0);
     } else if (currentState == LOW && lastState == HIGH) {
       // Toggle was just toggled on
       usbMIDI.sendControlChange(cc, 127, DIGITAL_CHANNEL);
-      updateDisplay(cc, DIGITAL_CHANNEL, 0);
+      updateDisplay(cc, DIGITAL_CHANNEL, 127);
     }
     lastState = currentState;
     return changed;
@@ -69,29 +54,53 @@ void setupDigitalIns() {
   }
 }
 
+enum MuxState { LOAD, READ, ADVANCE, CLEAR };
+
 int loopDigitalIns() {
   constexpr unsigned long cycleInterval = 1; // ms
-  unsigned long now = millis();
+  static unsigned long lastTic = 0;
+  static bool clkHigh = false;
 
-  static unsigned long lastSHLDTime = 0;
-  static bool shldHigh = false;
-  if (!shldHigh && now - lastSHLDTime >= cycleInterval) {
-    digitalWrite(CLK_PIN, LOW);
-    digitalWrite(SHLD_PIN, HIGH);
-    shldHigh = true;
-    lastSHLDTime = now;
-  } else if (shldHigh && now - lastSHLDTime >= cycleInterval) {
-    for (size_t i = 0; i < NUM_TOGGLES; i++) {
-      cycle_mux();
-      if (!toggles[i])
-        continue; // Safety check for failed allocation
-      bool buttonState = digitalRead(DATA_PIN);
-      toggles[i]->update(buttonState);
+  unsigned long now = millis();
+  static MuxState state = LOAD;
+  static size_t readIndex = 0;
+
+  if (state == LOAD) {
+    if (now - lastTic >= cycleInterval) {
+      digitalWrite(CLK_PIN, LOW);
+      digitalWrite(SHLD_PIN, HIGH);
+      lastTic = now;
+      state = READ;
     }
-    digitalWrite(CLK_PIN, LOW);
-    digitalWrite(SHLD_PIN, LOW);
-    shldHigh = false;
-    lastSHLDTime = now;
+  }
+  if (state == READ) {
+    if (toggles[readIndex]) {
+      bool buttonState = digitalRead(DATA_PIN);
+      toggles[readIndex]->update(buttonState);
+    }
+    if (readIndex >= NUM_TOGGLES - 1) {
+      state = CLEAR;
+    } else {
+      state = ADVANCE;
+    }
+  }
+  if (state == ADVANCE) {
+    if (now - lastTic >= cycleInterval) {
+      digitalWrite(CLK_PIN, clkHigh ? HIGH : LOW);
+      lastTic = now;
+      clkHigh = !clkHigh;
+      readIndex++;
+      state = clkHigh ? ADVANCE : READ;
+    }
+  }
+  if (state == CLEAR) {
+    if (now - lastTic >= cycleInterval) {
+      digitalWrite(CLK_PIN, LOW);
+      digitalWrite(SHLD_PIN, LOW);
+      lastTic = now;
+      readIndex = 0;
+      state = LOAD;
+    }
   }
 
   return 0;
