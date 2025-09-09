@@ -60,6 +60,7 @@ int loopDigitalIns() {
   constexpr unsigned long cycleInterval = 1; // ms
   static unsigned long lastTic = 0;
   static bool clkHigh = false;
+  static unsigned long iteration = 0;
 
   unsigned long now = millis();
   static MuxState state = LOAD;
@@ -100,8 +101,9 @@ int loopDigitalIns() {
       lastTic = now;
       readIndex = 0;
       state = LOAD;
+      iteration++;
     }
   }
 
-  return 0;
+  return iteration;
 }
