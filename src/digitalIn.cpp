@@ -15,29 +15,29 @@ constexpr uint8_t DIGITAL_CC[NUM_TOGGLES] = {
 
 class Toggle {
 public:
-  Toggle(uint8_t cc) : cc(cc), lastState(LOW) {}
+  Toggle(uint8_t cc) : cc(cc), state(LOW) {}
 
-  bool update(bool currentState) {
-    bool changed = (currentState != lastState);
-    if (currentState == HIGH && lastState == LOW) {
+  bool update(int newState) {
+    bool changed = (newState != state);
+    if (newState == HIGH && state == LOW) {
       // Toggle was just toggled off
       usbMIDI.sendControlChange(cc, 0, DIGITAL_CHANNEL);
       updateDisplay(cc, DIGITAL_CHANNEL, 0);
-    } else if (currentState == LOW && lastState == HIGH) {
+    } else if (newState == LOW && state == HIGH) {
       // Toggle was just toggled on
       usbMIDI.sendControlChange(cc, 127, DIGITAL_CHANNEL);
       updateDisplay(cc, DIGITAL_CHANNEL, 127);
     }
-    lastState = currentState;
+    state = newState;
     return changed;
   }
 
   uint8_t getCC() const { return cc; }
-  bool getLastState() const { return lastState; }
+  int getState() const { return state; }
 
 private:
   uint8_t cc;
-  bool lastState;
+  int state;
 };
 
 std::array<Toggle *, NUM_TOGGLES> toggles = {nullptr};
@@ -75,7 +75,7 @@ int loopDigitalIns() {
   }
   if (state == READ) {
     if (toggles[readIndex]) {
-      bool buttonState = digitalRead(DATA_PIN);
+      int buttonState = digitalRead(DATA_PIN);
       toggles[readIndex]->update(buttonState);
     }
     if (readIndex >= NUM_TOGGLES - 1) {
