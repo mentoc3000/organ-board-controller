@@ -47,6 +47,8 @@ public:
     samples[sampleIndex] = value;
     sampleIndex = (sampleIndex + 1) % medianWindow;
 
+    // TODO: handle inital case where there are fewer than medianWindow samples
+
     int sorted[medianWindow];
     memcpy(sorted, samples, sizeof(sorted));
     std::sort(sorted, sorted + medianWindow);
@@ -86,6 +88,7 @@ public:
 
   uint8_t getPin() const { return pin; }
   uint8_t getCC() const { return cc; }
+  uint8_t getLastAnalogValue() const { return lastAnalogValue; }
 
 private:
   uint8_t pin;
@@ -113,9 +116,19 @@ void setupAnalogIO() {
   }
 }
 
+bool checkCalibrationTrigger() {
+  const int high = 120;
+  const int low = 10;
+  updateDisplay(knobs[2]->getCC(), ANALOG_CHANNEL,
+                knobs[2]->getLastAnalogValue());
+  return knobs[2]->getLastAnalogValue() > high && // CC 3
+         knobs[9]->getLastAnalogValue() < low &&  // CC 4
+         knobs[4]->getLastAnalogValue() < low &&  // CC 5
+         knobs[3]->getLastAnalogValue() > high;   // CC 6
+}
+
 void loopAnalogIO() {
-  for (size_t i = 0; i < NUM_KNOBS; i++) {
-    Knob *knob = knobs[i];
+  for (Knob *knob : knobs) {
     if (!knob)
       continue; // Safety check for failed allocation
     int rawValue = analogRead(knob->getPin());

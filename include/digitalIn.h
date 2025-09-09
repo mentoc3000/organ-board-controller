@@ -1,4 +1,4 @@
 #pragma once
 
 void setupDigitalIns();
-void loopDigitalIns();
+int loopDigitalIns();

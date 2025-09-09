@@ -2,3 +2,4 @@
 
 void setupAnalogIO();
 void loopAnalogIO();
+bool checkCalibrationTrigger();
