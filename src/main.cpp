@@ -20,25 +20,21 @@ void setup() {
   }
 
   calibrationMode = checkCalibrationTrigger();
-}
 
-// Placeholder for calibration mode
-void calibrationLoop() {
-  // TODO: Implement calibration logic here
-  // For now, just display a message
-  updateDisplay(100, 100, 100); // Example: show calibration mode
-  delay(2000);
+  if (calibrationMode) {
+    clearAnalogCalibration();
+  }
 }
 
 void loop() {
   if (calibrationMode) {
-    calibrationLoop();
+    loopAnalogCalibration();
     return;
   }
 
-  // loopDigitalIns();
-  // loopDigitalOuts();
-  // loopAnalogIO();
+  loopDigitalIns();
+  loopDigitalOuts();
+  loopAnalogIO();
 
   // Always call this to keep USB MIDI running smoothly
   while (usbMIDI.read()) {

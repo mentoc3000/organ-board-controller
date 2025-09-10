@@ -1,4 +1,5 @@
 #include "display.h"
+#include "storage.h"
 #include <Arduino.h>
 #include <algorithm>
 #include <array>
@@ -6,8 +7,6 @@
 
 constexpr uint8_t ANALOG_CHANNEL = 1;
 constexpr size_t NUM_KNOBS = 14;
-constexpr int RAW_MIN_DEFAULT = 4;
-constexpr int RAW_MAX_DEFAULT = 1020;
 constexpr int ANALOG_DELTA_DETECT = 1;
 
 struct KnobConfig {
@@ -18,20 +17,11 @@ struct KnobConfig {
 };
 
 const std::array<KnobConfig, NUM_KNOBS> KNOB_CONFIGS = {
-    KnobConfig{A0, 9, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
-    KnobConfig{A1, 8, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
-    KnobConfig{A6, 3, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
-    KnobConfig{A7, 6, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
-    KnobConfig{A8, 5, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
-    KnobConfig{A9, 7, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
-    KnobConfig{A10, 0, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
-    KnobConfig{A11, 1, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
-    KnobConfig{A12, 2, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
-    KnobConfig{A13, 4, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
-    KnobConfig{A14, 13, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
-    KnobConfig{A15, 12, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
-    KnobConfig{A16, 11, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT},
-    KnobConfig{A17, 10, RAW_MIN_DEFAULT, RAW_MAX_DEFAULT}};
+    KnobConfig{A0, 9},   KnobConfig{A1, 8},   KnobConfig{A6, 3},
+    KnobConfig{A7, 6},   KnobConfig{A8, 5},   KnobConfig{A9, 7},
+    KnobConfig{A10, 0},  KnobConfig{A11, 1},  KnobConfig{A12, 2},
+    KnobConfig{A13, 4},  KnobConfig{A14, 13}, KnobConfig{A15, 12},
+    KnobConfig{A16, 11}, KnobConfig{A17, 10}};
 
 class Knob {
 public:
@@ -106,10 +96,12 @@ private:
 std::array<Knob *, NUM_KNOBS> knobs = {nullptr};
 
 void setupAnalogIO() {
+  int rawMin, rawMax;
   for (size_t i = 0; i < NUM_KNOBS; i++) {
     const KnobConfig &cfg = KNOB_CONFIGS[i];
     pinMode(cfg.pin, INPUT);
-    knobs[i] = new (std::nothrow) Knob(cfg.pin, cfg.cc, cfg.rawMin, cfg.rawMax);
+    loadCalibrationData(cfg.pin, rawMin, rawMax);
+    knobs[i] = new (std::nothrow) Knob(cfg.pin, cfg.cc, rawMin, rawMax);
     if (!knobs[i]) {
       // Handle allocation failure
     }
@@ -119,8 +111,8 @@ void setupAnalogIO() {
 bool checkCalibrationTrigger() {
   const int high = 120;
   const int low = 10;
-  updateDisplay(knobs[2]->getCC(), ANALOG_CHANNEL,
-                knobs[2]->getLastAnalogValue());
+  displaySend(knobs[2]->getCC(), ANALOG_CHANNEL,
+              knobs[2]->getLastAnalogValue());
   return knobs[2]->getLastAnalogValue() > high && // CC 3
          knobs[9]->getLastAnalogValue() < low &&  // CC 4
          knobs[4]->getLastAnalogValue() < low &&  // CC 5
@@ -134,7 +126,28 @@ void loopAnalogIO() {
     int rawValue = analogRead(knob->getPin());
     int ccValue = knob->update(rawValue);
     if (ccValue != -1) {
-      updateDisplay(knob->getCC(), ANALOG_CHANNEL, ccValue);
+      displaySend(knob->getCC(), ANALOG_CHANNEL, ccValue);
     }
   }
+}
+
+void clearAnalogCalibration() {
+  for (const KnobConfig &cfg : KNOB_CONFIGS) {
+    saveCalibrationData(cfg.pin, 512, 512);
+  }
+}
+
+void loopAnalogCalibration() {
+  int rawMin, rawMax, newMin, newMax;
+  for (KnobConfig cfg : KNOB_CONFIGS) {
+    int rawValue = analogRead(cfg.pin);
+    loadCalibrationData(cfg.pin, rawMin, rawMax);
+    newMin = std::min(rawMin, rawValue);
+    newMax = std::max(rawMax, rawValue);
+    if (newMin < rawMin || newMax > rawMax) {
+      saveCalibrationData(cfg.pin, newMin, newMax);
+      displayCalibration(cfg.cc, newMin, newMax);
+    }
+  }
+  delay(200);
 }

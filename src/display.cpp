@@ -24,7 +24,7 @@ void setupDisplay() {
   display.display();
 }
 
-void updateDisplay(int cc, int channel, int midiValue) {
+void displaySend(int cc, int channel, int midiValue) {
   display.clearDisplay();
   display.setCursor(0, 0);
   display.print("CC:      ");
@@ -33,5 +33,17 @@ void updateDisplay(int cc, int channel, int midiValue) {
   display.println(channel);
   display.print("MIDI:    ");
   display.println(midiValue);
+  display.display();
+}
+
+void displayCalibration(int cc, int min, int max) {
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.print("CC:  ");
+  display.println(cc);
+  display.print("Min: ");
+  display.println(min);
+  display.print("Max: ");
+  display.println(max);
   display.display();
 }
