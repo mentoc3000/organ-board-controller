@@ -22,6 +22,7 @@ void setup() {
   calibrationMode = checkCalibrationTrigger();
 
   if (calibrationMode) {
+    displayCalibration();
     clearAnalogCalibration();
   }
 }

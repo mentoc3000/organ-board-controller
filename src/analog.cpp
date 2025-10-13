@@ -146,7 +146,6 @@ void loopAnalogCalibration() {
     newMax = std::max(rawMax, rawValue);
     if (newMin < rawMin || newMax > rawMax) {
       saveCalibrationData(cfg.pin, newMin, newMax);
-      displayCalibration(cfg.cc, newMin, newMax);
     }
   }
   delay(200);

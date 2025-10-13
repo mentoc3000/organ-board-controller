@@ -36,14 +36,10 @@ void displaySend(int cc, int channel, int midiValue) {
   display.display();
 }
 
-void displayCalibration(int cc, int min, int max) {
+void displayCalibration() {
   display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(SSD1306_WHITE);
   display.setCursor(0, 0);
-  display.print("CC:  ");
-  display.println(cc);
-  display.print("Min: ");
-  display.println(min);
-  display.print("Max: ");
-  display.println(max);
-  display.display();
+  display.println("Calibrating...");
 }
