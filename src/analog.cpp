@@ -25,6 +25,8 @@ const std::array<KnobConfig, NUM_KNOBS> KNOB_CONFIGS = {
 
 class Knob {
 public:
+  static constexpr int medianWindow = 5;
+
   Knob(uint8_t pin, uint8_t cc, int rawMin, int rawMax)
       : pin(pin), cc(cc), lastAnalogValue(-1), analogMoved(false),
         rawMin(rawMin), rawMax(rawMax) {
@@ -36,8 +38,6 @@ public:
     // Median filter for analog input
     samples[sampleIndex] = value;
     sampleIndex = (sampleIndex + 1) % medianWindow;
-
-    // TODO: handle inital case where there are fewer than medianWindow samples
 
     int sorted[medianWindow];
     memcpy(sorted, samples, sizeof(sorted));
@@ -78,14 +78,12 @@ public:
 
   uint8_t getPin() const { return pin; }
   uint8_t getCC() const { return cc; }
-  uint8_t getLastAnalogValue() const { return lastAnalogValue; }
 
 private:
   uint8_t pin;
   uint8_t cc;
   int lastAnalogValue;
   bool analogMoved;
-  static constexpr int medianWindow = 5;
   int samples[medianWindow];
   int sampleIndex = 0;
   int rawMin;
@@ -104,6 +102,15 @@ void setupAnalogIO() {
     knobs[i] = new (std::nothrow) Knob(cfg.pin, cfg.cc, rawMin, rawMax);
     if (!knobs[i]) {
       // Handle allocation failure
+    }
+  }
+
+  for (int i = 0; i < knobs[0]->medianWindow; i++) {
+    for (Knob *knob : knobs) {
+      if (!knob)
+        continue; // Safety check for failed allocation
+      int rawValue = analogRead(knob->getPin());
+      knob->update(rawValue); // Initialize the knob state
     }
   }
 }
