@@ -137,7 +137,7 @@ void loopAnalogIO() {
 
 void clearAnalogCalibration() {
   for (const KnobConfig &cfg : KNOB_CONFIGS) {
-    saveCalibrationData(cfg.pin, 512, 512);
+    saveCalibrationData(cfg.pin, 300, 600);
   }
 }
 
