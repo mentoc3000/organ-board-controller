@@ -24,7 +24,7 @@ void setupDisplay() {
   display.display();
 }
 
-void updateDisplay(int cc, int channel, int midiValue) {
+void displaySend(int cc, int channel, int midiValue) {
   display.clearDisplay();
   display.setCursor(0, 0);
   display.print("CC:      ");
@@ -33,5 +33,25 @@ void updateDisplay(int cc, int channel, int midiValue) {
   display.println(channel);
   display.print("MIDI:    ");
   display.println(midiValue);
+  display.display();
+}
+
+void displayCalibration() {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println("Calibrating...");
+  display.display();
+}
+
+void displayValue(const char *label, int value) {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.print(label);
+  display.print(": ");
+  display.println(value);
   display.display();
 }

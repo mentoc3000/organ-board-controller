@@ -15,29 +15,29 @@ constexpr uint8_t DIGITAL_CC[NUM_TOGGLES] = {
 
 class Toggle {
 public:
-  Toggle(uint8_t cc) : cc(cc), lastState(LOW) {}
+  Toggle(uint8_t cc) : cc(cc), state(LOW) {}
 
-  bool update(bool currentState) {
-    bool changed = (currentState != lastState);
-    if (currentState == HIGH && lastState == LOW) {
+  bool update(int newState) {
+    bool changed = (newState != state);
+    if (newState == HIGH && state == LOW) {
       // Toggle was just toggled off
       usbMIDI.sendControlChange(cc, 0, DIGITAL_CHANNEL);
-      updateDisplay(cc, DIGITAL_CHANNEL, 0);
-    } else if (currentState == LOW && lastState == HIGH) {
+      displaySend(cc, DIGITAL_CHANNEL, 0);
+    } else if (newState == LOW && state == HIGH) {
       // Toggle was just toggled on
       usbMIDI.sendControlChange(cc, 127, DIGITAL_CHANNEL);
-      updateDisplay(cc, DIGITAL_CHANNEL, 127);
+      displaySend(cc, DIGITAL_CHANNEL, 127);
     }
-    lastState = currentState;
+    state = newState;
     return changed;
   }
 
   uint8_t getCC() const { return cc; }
-  bool getLastState() const { return lastState; }
+  int getState() const { return state; }
 
 private:
   uint8_t cc;
-  bool lastState;
+  int state;
 };
 
 std::array<Toggle *, NUM_TOGGLES> toggles = {nullptr};
@@ -60,6 +60,7 @@ int loopDigitalIns() {
   constexpr unsigned long cycleInterval = 1; // ms
   static unsigned long lastTic = 0;
   static bool clkHigh = false;
+  static unsigned long iteration = 0;
 
   unsigned long now = millis();
   static MuxState state = LOAD;
@@ -75,7 +76,7 @@ int loopDigitalIns() {
   }
   if (state == READ) {
     if (toggles[readIndex]) {
-      bool buttonState = digitalRead(DATA_PIN);
+      int buttonState = digitalRead(DATA_PIN);
       toggles[readIndex]->update(buttonState);
     }
     if (readIndex >= NUM_TOGGLES - 1) {
@@ -100,8 +101,9 @@ int loopDigitalIns() {
       lastTic = now;
       readIndex = 0;
       state = LOAD;
+      iteration++;
     }
   }
 
-  return 0;
+  return iteration;
 }

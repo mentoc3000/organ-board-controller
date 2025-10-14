@@ -2,3 +2,6 @@
 
 void setupAnalogIO();
 void loopAnalogIO();
+bool checkCalibrationTrigger();
+void clearAnalogCalibration();
+void loopAnalogCalibration();
