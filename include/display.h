@@ -13,3 +13,4 @@ extern Adafruit_SSD1306 display;
 void setupDisplay();
 void displaySend(int analogValue, int channel, int midiValue);
 void displayCalibration();
+void displayValue(const char *label, int value);

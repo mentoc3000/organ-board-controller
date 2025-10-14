@@ -14,11 +14,6 @@ void setup() {
   setupDisplay();
   delay(1);
 
-  // load toggle states and check for calibration trigger
-  for (int i = 0; i < 5; i++) {
-    loopAnalogIO();
-  }
-
   calibrationMode = checkCalibrationTrigger();
 
   if (calibrationMode) {
@@ -28,6 +23,13 @@ void setup() {
 }
 
 void loop() {
+  // Always call this to keep USB MIDI running smoothly
+  while (usbMIDI.read()) {
+    if (usbMIDI.getType() == usbMIDI.Clock) {
+      onMidiClock();
+    }
+  }
+
   if (calibrationMode) {
     loopAnalogCalibration();
     return;
@@ -36,11 +38,4 @@ void loop() {
   loopDigitalIns();
   loopDigitalOuts();
   loopAnalogIO();
-
-  // Always call this to keep USB MIDI running smoothly
-  while (usbMIDI.read()) {
-    if (usbMIDI.getType() == usbMIDI.Clock) {
-      onMidiClock();
-    }
-  }
 }

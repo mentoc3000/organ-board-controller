@@ -109,14 +109,18 @@ void setupAnalogIO() {
 }
 
 bool checkCalibrationTrigger() {
-  const int high = 120;
-  const int low = 10;
-  displaySend(knobs[2]->getCC(), ANALOG_CHANNEL,
-              knobs[2]->getLastAnalogValue());
-  return knobs[2]->getLastAnalogValue() > high && // CC 3
-         knobs[9]->getLastAnalogValue() < low &&  // CC 4
-         knobs[4]->getLastAnalogValue() < low &&  // CC 5
-         knobs[3]->getLastAnalogValue() > high;   // CC 6
+  const int high = 900;
+  const int low = 100;
+
+  int cc3_val = analogRead(KNOB_CONFIGS[2].pin); // CC 3
+  int cc4_val = analogRead(KNOB_CONFIGS[9].pin); // CC 4
+  int cc5_val = analogRead(KNOB_CONFIGS[4].pin); // CC 5
+  int cc6_val = analogRead(KNOB_CONFIGS[3].pin); // CC 6
+
+  // Show the values on the display so you can see them
+  delay(3000); // Give time to read the display
+
+  return cc3_val > high && cc4_val < low && cc5_val < low && cc6_val > high;
 }
 
 void loopAnalogIO() {
