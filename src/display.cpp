@@ -45,6 +45,16 @@ void displayCalibration() {
   display.display();
 }
 
+void displayCalibratingKnob(int knobIndex) {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.print("Calibrating CC ");
+  display.println(knobIndex);
+  display.display();
+}
+
 void displayValue(const char *label, int value) {
   display.clearDisplay();
   display.setTextSize(1);

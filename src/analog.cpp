@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <tuple>
 
 constexpr uint8_t ANALOG_CHANNEL = 1;
@@ -38,19 +39,21 @@ public:
     // Median filter for analog input
     samples[sampleIndex] = value;
     sampleIndex = (sampleIndex + 1) % medianWindow;
+    float scale = static_cast<float>(rawMax - rawMin) / 127.0f;
 
     int sorted[medianWindow];
     memcpy(sorted, samples, sizeof(sorted));
     std::sort(sorted, sorted + medianWindow);
-    int rawAnalog = sorted[medianWindow / 2];
-    int analogValue = 0;
-    if (rawAnalog <= rawMin) {
-      analogValue = 0;
-    } else if (rawAnalog >= rawMax) {
-      analogValue = 127;
+    int raw = sorted[medianWindow / 2];
+    float rawClipped = 0.0;
+    if (raw <= rawMin) {
+      rawClipped = 0.0f;
+    } else if (raw >= rawMax) {
+      rawClipped = static_cast<float>(rawMax - rawMin);
     } else {
-      analogValue = (rawAnalog - rawMin) * 127 / (rawMax - rawMin);
+      rawClipped = static_cast<float>(raw - rawMin);
     }
+    int analogValue = std::round(rawClipped / scale);
 
     // Only start sending analog MIDI after the dial is moved from its initial
     // value
@@ -65,8 +68,8 @@ public:
         (lastAnalogValue == -1 || // this is the first change OR
          (lastAnalogValue != 0 && analogValue == 0) ||     // the min was hit OR
          (lastAnalogValue != 127 && analogValue == 127) || // the max was hit OR
-         abs(analogValue - lastAnalogValue) >
-             analogDeltaDetect)) // the change was large enough
+         abs(rawClipped - lastAnalogValue * scale) >
+             rawDeltaDetect)) // the change was large enough
     {
       usbMIDI.sendControlChange(cc, analogValue, ANALOG_CHANNEL);
       lastAnalogValue = analogValue;
@@ -88,7 +91,7 @@ private:
   int sampleIndex = 0;
   int rawMin;
   int rawMax;
-  static constexpr int analogDeltaDetect = 1;
+  static constexpr int rawDeltaDetect = 6;
 };
 
 std::array<Knob *, NUM_KNOBS> knobs = {nullptr};
@@ -151,11 +154,12 @@ void clearAnalogCalibration() {
 void loopAnalogCalibration() {
   int rawMin, rawMax, newMin, newMax;
   for (KnobConfig cfg : KNOB_CONFIGS) {
-    int rawValue = analogRead(cfg.pin);
+    int raw = analogRead(cfg.pin);
     loadCalibrationData(cfg.pin, rawMin, rawMax);
-    newMin = std::min(rawMin, rawValue);
-    newMax = std::max(rawMax, rawValue);
+    newMin = std::min(rawMin, raw);
+    newMax = std::max(rawMax, raw);
     if (newMin < rawMin || newMax > rawMax) {
+      displayCalibratingKnob(cfg.cc);
       saveCalibrationData(cfg.pin, newMin, newMax);
     }
   }
