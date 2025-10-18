@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <tuple>
 
 constexpr uint8_t ANALOG_CHANNEL = 1;
@@ -25,6 +26,8 @@ const std::array<KnobConfig, NUM_KNOBS> KNOB_CONFIGS = {
 
 class Knob {
 public:
+  static constexpr int medianWindow = 5;
+
   Knob(uint8_t pin, uint8_t cc, int rawMin, int rawMax)
       : pin(pin), cc(cc), lastAnalogValue(-1), analogMoved(false),
         rawMin(rawMin), rawMax(rawMax) {
@@ -36,21 +39,21 @@ public:
     // Median filter for analog input
     samples[sampleIndex] = value;
     sampleIndex = (sampleIndex + 1) % medianWindow;
-
-    // TODO: handle inital case where there are fewer than medianWindow samples
+    float scale = static_cast<float>(rawMax - rawMin) / 127.0f;
 
     int sorted[medianWindow];
     memcpy(sorted, samples, sizeof(sorted));
     std::sort(sorted, sorted + medianWindow);
-    int rawAnalog = sorted[medianWindow / 2];
-    int analogValue = 0;
-    if (rawAnalog <= rawMin) {
-      analogValue = 0;
-    } else if (rawAnalog >= rawMax) {
-      analogValue = 127;
+    int rawValue = sorted[medianWindow / 2];
+    float rawClipped = 0.0;
+    if (rawValue <= rawMin) {
+      rawClipped = 0.0f;
+    } else if (rawValue >= rawMax) {
+      rawClipped = static_cast<float>(rawMax - rawMin);
     } else {
-      analogValue = (rawAnalog - rawMin) * 127 / (rawMax - rawMin);
+      rawClipped = static_cast<float>(rawValue - rawMin);
     }
+    int analogValue = std::round(rawClipped / scale);
 
     // Only start sending analog MIDI after the dial is moved from its initial
     // value
@@ -65,8 +68,8 @@ public:
         (lastAnalogValue == -1 || // this is the first change OR
          (lastAnalogValue != 0 && analogValue == 0) ||     // the min was hit OR
          (lastAnalogValue != 127 && analogValue == 127) || // the max was hit OR
-         abs(analogValue - lastAnalogValue) >
-             analogDeltaDetect)) // the change was large enough
+         abs(rawClipped - lastAnalogValue * scale) >
+             rawDeltaDetect)) // the change was large enough
     {
       usbMIDI.sendControlChange(cc, analogValue, ANALOG_CHANNEL);
       lastAnalogValue = analogValue;
@@ -78,19 +81,17 @@ public:
 
   uint8_t getPin() const { return pin; }
   uint8_t getCC() const { return cc; }
-  uint8_t getLastAnalogValue() const { return lastAnalogValue; }
 
 private:
   uint8_t pin;
   uint8_t cc;
   int lastAnalogValue;
   bool analogMoved;
-  static constexpr int medianWindow = 5;
   int samples[medianWindow];
   int sampleIndex = 0;
   int rawMin;
   int rawMax;
-  static constexpr int analogDeltaDetect = 1;
+  static constexpr int rawDeltaDetect = 6;
 };
 
 std::array<Knob *, NUM_KNOBS> knobs = {nullptr};
@@ -101,9 +102,18 @@ void setupAnalogIO() {
     const KnobConfig &cfg = KNOB_CONFIGS[i];
     pinMode(cfg.pin, INPUT);
     loadCalibrationData(cfg.pin, rawMin, rawMax);
-    knobs[i] = new (std::nothrow) Knob(cfg.pin, cfg.cc, rawMin, rawMax);
+    knobs[i] = new (std::nothrow) Knob(cfg.pin, cfg.cc, 0, 1023);
     if (!knobs[i]) {
       // Handle allocation failure
+    }
+  }
+
+  for (int i = 0; i < knobs[0]->medianWindow; i++) {
+    for (Knob *knob : knobs) {
+      if (!knob)
+        continue; // Safety check for failed allocation
+      int rawValue = analogRead(knob->getPin());
+      knob->update(rawValue); // Initialize the knob state
     }
   }
 }
@@ -149,6 +159,7 @@ void loopAnalogCalibration() {
     newMin = std::min(rawMin, rawValue);
     newMax = std::max(rawMax, rawValue);
     if (newMin < rawMin || newMax > rawMax) {
+      displayCalibratingKnob(cfg.cc, rawValue, newMin, newMax);
       saveCalibrationData(cfg.pin, newMin, newMax);
     }
   }
