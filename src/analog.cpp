@@ -102,7 +102,7 @@ void setupAnalogIO() {
     const KnobConfig &cfg = KNOB_CONFIGS[i];
     pinMode(cfg.pin, INPUT);
     loadCalibrationData(cfg.pin, rawMin, rawMax);
-    knobs[i] = new (std::nothrow) Knob(cfg.pin, cfg.cc, rawMin, rawMax);
+    knobs[i] = new (std::nothrow) Knob(cfg.pin, cfg.cc, 0, 1023);
     if (!knobs[i]) {
       // Handle allocation failure
     }

@@ -14,12 +14,12 @@ void setup() {
   setupDisplay();
   delay(1);
 
-  calibrationMode = checkCalibrationTrigger();
+  // calibrationMode = checkCalibrationTrigger();
 
-  if (calibrationMode) {
-    displayCalibration();
-    clearAnalogCalibration();
-  }
+  // if (calibrationMode) {
+  //   displayCalibration();
+  //   clearAnalogCalibration();
+  // }
 }
 
 void loop() {
