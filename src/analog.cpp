@@ -44,14 +44,14 @@ public:
     int sorted[medianWindow];
     memcpy(sorted, samples, sizeof(sorted));
     std::sort(sorted, sorted + medianWindow);
-    int raw = sorted[medianWindow / 2];
+    int rawValue = sorted[medianWindow / 2];
     float rawClipped = 0.0;
-    if (raw <= rawMin) {
+    if (rawValue <= rawMin) {
       rawClipped = 0.0f;
-    } else if (raw >= rawMax) {
+    } else if (rawValue >= rawMax) {
       rawClipped = static_cast<float>(rawMax - rawMin);
     } else {
-      rawClipped = static_cast<float>(raw - rawMin);
+      rawClipped = static_cast<float>(rawValue - rawMin);
     }
     int analogValue = std::round(rawClipped / scale);
 
@@ -154,12 +154,12 @@ void clearAnalogCalibration() {
 void loopAnalogCalibration() {
   int rawMin, rawMax, newMin, newMax;
   for (KnobConfig cfg : KNOB_CONFIGS) {
-    int raw = analogRead(cfg.pin);
+    int rawValue = analogRead(cfg.pin);
     loadCalibrationData(cfg.pin, rawMin, rawMax);
-    newMin = std::min(rawMin, raw);
-    newMax = std::max(rawMax, raw);
+    newMin = std::min(rawMin, rawValue);
+    newMax = std::max(rawMax, rawValue);
     if (newMin < rawMin || newMax > rawMax) {
-      displayCalibratingKnob(cfg.cc);
+      displayCalibratingKnob(cfg.cc, rawValue, newMin, newMax);
       saveCalibrationData(cfg.pin, newMin, newMax);
     }
   }

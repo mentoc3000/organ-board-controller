@@ -45,13 +45,21 @@ void displayCalibration() {
   display.display();
 }
 
-void displayCalibratingKnob(int knobIndex) {
+void displayCalibratingKnob(int knobIndex, int rawValue, int rawMin,
+                            int rawMax) {
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0, 0);
   display.print("Calibrating CC ");
-  display.println(knobIndex);
+  display.print(knobIndex);
+  display.println("...");
+  display.print("(");
+  display.print(rawMin);
+  display.print(" - ");
+  display.print(rawValue);
+  display.print(" - ");
+  display.print(rawMax);
   display.display();
 }
 
