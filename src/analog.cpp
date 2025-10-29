@@ -159,7 +159,7 @@ void loopAnalogCalibration() {
     newMin = std::min(rawMin, rawValue);
     newMax = std::max(rawMax, rawValue);
     if (newMin < rawMin || newMax > rawMax) {
-      displayCalibratingKnob(cfg.cc, rawValue, newMin, newMax);
+      // displayCalibratingKnob(cfg.cc, rawValue, newMin, newMax);
       saveCalibrationData(cfg.pin, newMin, newMax);
     }
   }

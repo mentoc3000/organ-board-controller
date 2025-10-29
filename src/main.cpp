@@ -11,7 +11,7 @@ bool calibrationMode = false;
 void setup() {
   setupDigitalIns();
   setupAnalogIO();
-  setupDisplay();
+  // setupDisplay();
   delay(1);
 
   // calibrationMode = checkCalibrationTrigger();

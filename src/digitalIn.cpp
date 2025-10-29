@@ -22,11 +22,11 @@ public:
     if (newState == HIGH && state == LOW) {
       // Toggle was just toggled off
       usbMIDI.sendControlChange(cc, 0, DIGITAL_CHANNEL);
-      displaySend(cc, DIGITAL_CHANNEL, 0);
+      // displaySend(cc, DIGITAL_CHANNEL, 0);
     } else if (newState == LOW && state == HIGH) {
       // Toggle was just toggled on
       usbMIDI.sendControlChange(cc, 127, DIGITAL_CHANNEL);
-      displaySend(cc, DIGITAL_CHANNEL, 127);
+      // displaySend(cc, DIGITAL_CHANNEL, 127);
     }
     state = newState;
     return changed;
