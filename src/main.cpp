@@ -10,6 +10,7 @@ bool calibrationMode = false;
 
 void setup() {
   setupDigitalIns();
+  setupDigitalOuts();
   setupAnalogIO();
   // setupDisplay();
   delay(1);
