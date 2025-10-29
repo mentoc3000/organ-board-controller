@@ -140,7 +140,7 @@ void loopAnalogIO() {
     int rawValue = analogRead(knob->getPin());
     int ccValue = knob->update(rawValue);
     if (ccValue != -1) {
-      displaySend(knob->getCC(), ANALOG_CHANNEL, ccValue);
+      // displaySend(knob->getCC(), ANALOG_CHANNEL, ccValue);
     }
   }
 }
