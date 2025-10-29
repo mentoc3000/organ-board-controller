@@ -1,4 +1,5 @@
 #pragma once
 
 void setupDigitalIns();
-int loopDigitalIns();
+void loopDigitalIns();
+void onMidiClock();

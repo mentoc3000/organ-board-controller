@@ -122,10 +122,10 @@ bool checkCalibrationTrigger() {
   const int high = 900;
   const int low = 100;
 
-  int cc3_val = analogRead(KNOB_CONFIGS[2].pin); // CC 3
-  int cc4_val = analogRead(KNOB_CONFIGS[9].pin); // CC 4
-  int cc5_val = analogRead(KNOB_CONFIGS[4].pin); // CC 5
-  int cc6_val = analogRead(KNOB_CONFIGS[3].pin); // CC 6
+  int cc3_val = analogRead(KNOB_CONFIGS[2].pin);
+  int cc4_val = analogRead(KNOB_CONFIGS[9].pin);
+  int cc5_val = analogRead(KNOB_CONFIGS[4].pin);
+  int cc6_val = analogRead(KNOB_CONFIGS[3].pin);
 
   // Show the values on the display so you can see them
   delay(3000); // Give time to read the display
@@ -140,7 +140,7 @@ void loopAnalogIO() {
     int rawValue = analogRead(knob->getPin());
     int ccValue = knob->update(rawValue);
     if (ccValue != -1) {
-      displaySend(knob->getCC(), ANALOG_CHANNEL, ccValue);
+      // displaySend(knob->getCC(), ANALOG_CHANNEL, ccValue);
     }
   }
 }
@@ -159,7 +159,7 @@ void loopAnalogCalibration() {
     newMin = std::min(rawMin, rawValue);
     newMax = std::max(rawMax, rawValue);
     if (newMin < rawMin || newMax > rawMax) {
-      displayCalibratingKnob(cfg.cc, rawValue, newMin, newMax);
+      // displayCalibratingKnob(cfg.cc, rawValue, newMin, newMax);
       saveCalibrationData(cfg.pin, newMin, newMax);
     }
   }
