@@ -5,7 +5,7 @@ constexpr uint8_t LED_PIN = 5;
 static uint8_t midiClockCount = 0;
 static bool ledState = false;
 static unsigned long lastBeatTime = 0;
-constexpr unsigned long ledOnDuration = 100; // ms LED stays on per beat
+constexpr unsigned long ledOnDuration = 30; // ms LED stays on per beat
 
 void setupDigitalIns() {
   pinMode(LED_PIN, OUTPUT);
