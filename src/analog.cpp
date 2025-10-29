@@ -6,7 +6,7 @@
 #include <cmath>
 #include <tuple>
 
-constexpr uint8_t ANALOG_CHANNEL = 1;
+constexpr uint8_t ANALOG_CHANNEL = 6;
 constexpr size_t NUM_KNOBS = 14;
 constexpr int ANALOG_DELTA_DETECT = 1;
 
@@ -18,11 +18,11 @@ struct KnobConfig {
 };
 
 const std::array<KnobConfig, NUM_KNOBS> KNOB_CONFIGS = {
-    KnobConfig{A0, 9},   KnobConfig{A1, 8},   KnobConfig{A6, 3},
-    KnobConfig{A7, 6},   KnobConfig{A8, 5},   KnobConfig{A9, 7},
-    KnobConfig{A10, 0},  KnobConfig{A11, 1},  KnobConfig{A12, 2},
-    KnobConfig{A13, 4},  KnobConfig{A14, 13}, KnobConfig{A15, 12},
-    KnobConfig{A16, 11}, KnobConfig{A17, 10}};
+    KnobConfig{A0, 31},  KnobConfig{A1, 30},  KnobConfig{A6, 25},
+    KnobConfig{A7, 28},  KnobConfig{A8, 27},  KnobConfig{A9, 29},
+    KnobConfig{A10, 22}, KnobConfig{A11, 23}, KnobConfig{A12, 24},
+    KnobConfig{A13, 26}, KnobConfig{A14, 35}, KnobConfig{A15, 34},
+    KnobConfig{A16, 33}, KnobConfig{A17, 32}};
 
 class Knob {
 public:
