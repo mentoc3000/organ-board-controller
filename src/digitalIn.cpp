@@ -6,7 +6,7 @@
 constexpr uint8_t DATA_PIN = 30;
 constexpr uint8_t CLK_PIN = 31;
 constexpr uint8_t SHLD_PIN = 32;
-constexpr uint8_t DIGITAL_CHANNEL = 2;
+constexpr uint8_t DIGITAL_CHANNEL = 6;
 constexpr size_t NUM_TOGGLES = 22;
 constexpr uint8_t DIGITAL_CC[NUM_TOGGLES] = {
     10, 11, 12, 13, 1, 2,  3,  4,  18, 19, 20,
